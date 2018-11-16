@@ -19,7 +19,7 @@ Inspired by Lesson 2.8 "Perceptrons as Logical Operators" from Udacity course [I
 
 ## Installation
 
-1. Clone This repo.
+1. Clone this repo.
 ```
 git clone https://github.com/savchynt/interactive-perceptrons.git
 ```
