@@ -68,10 +68,13 @@ class XOR2LayerPerceptron(Perceptron):
 
     def forward(self, X):
         """XOR Multi-Layer Perceptron forward."""
-        l1n1 = heaviside(X, self.l1n1_W, self.l1n1_b)  # Layer1 Node1
-        l1n2 = heaviside(X, self.l1n2_W, self.l1n2_b)  # Layer1 Node2
+        l1n1 = X @ self.l1n1_W + self.l1n1_b  # Layer1 Node1
+        l1n2 = X @ self.l1n2_W + self.l1n2_b  # Layer1 Node2
+        l1n1 = heaviside(l1n1)  # Layer1 Node1
+        l1n2 = heaviside(l1n2)  # Layer1 Node2
         l1 = np.dstack([l1n1, l1n2])  # Layer1 output
-        l2 = heaviside(l1, self.l2_W, self.l2_b)  # Layer2 (Output) Single Node
+        l2 = l1 @ self.l2_W + self.l2_b  # Layer2
+        l2 = heaviside(l2)  # Layer2 (Output) Single Node
         return l2
 
     def plot(self, **kwargs):
