@@ -39,7 +39,9 @@ jupyter nbextension enable --py widgetsnbextension
 
 ## Usage
 
-Open `logical_perceptrons.ipynb` from repo folder in your jupyter.
+Go to `notebooks` folder
+
+Open `logical_perceptrons.ipynb` in your `jupyter`.
 
 For Animated Perceptron open `perceptron_algorithm.ipynb`.
 
