@@ -45,8 +45,9 @@ class Perceptron:
 
     def forward(self, X):
         """Forward propagation."""
-        y = heaviside(X, self.W, self.b)
-        return y
+        z = X @ self.W.T + self.b
+        y_hat = heaviside(z)
+        return y_hat
 
     def __call__(self, print_help=False):
         self.interactive_plot = interactive(self.plot, **self.params)
