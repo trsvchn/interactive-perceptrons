@@ -1,7 +1,7 @@
 import numpy as np
 
-from core.perceptron import Perceptron
-from core.activations import heaviside
+from perceptrons.perceptron import Perceptron
+from perceptrons.activations import heaviside
 
 
 class ANDPerceptron(Perceptron):

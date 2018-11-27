@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from ipywidgets import interactive
 
-from core.activations import heaviside
+from perceptrons.activations import heaviside
 
 
 class Perceptron:
