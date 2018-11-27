@@ -19,7 +19,23 @@ ENV/
 env.bak/
 venv.bak/
 
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
 # mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# IDEA config files
+.idea/
