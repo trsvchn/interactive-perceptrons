@@ -23,7 +23,7 @@ Inspired by Lesson 2.8 "Perceptrons as Logical Operators" and Lesson 2.10 "Perce
 
 1. Clone this repo.
 ```
-git clone https://github.com/savchynt/interactive-perceptrons.git
+git clone https://github.com/tsavchyn/interactive-perceptrons.git
 ```
 2. Install dependencies.
 
