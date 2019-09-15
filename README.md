@@ -11,34 +11,27 @@ Build logical operators by manually tweaking weights and biases values. Inspired
 - "XOR Perceptron"
 - XOR 2-Layer Perceptron
 
-![AND Perceptron](images/and.gif)
-![AND Perceptron](images/xor.gif)
+![AND Perceptron](media/and.gif)
+![AND Perceptron](media/xor.gif)
 
 ## Requirements
 `python3` `jupyter` `numpy` `matplotlib` `ipywidgets`
 
 ## Installation
 
-1. Clone this repo.
+1. Clone this repo
 ```
 git clone https://github.com/tsavchyn/interactive-perceptrons.git
 ```
-2. Install dependencies.
 
-With conda:
+2. Install dependencies
 ```bash
-conda install numpy matplotlib ipywidgets
-```
-With pip:
-```bash
-pip install numpy matplotlib ipywidgets
+pip install -r requirements.txt
 jupyter nbextension enable --py widgetsnbextension
 ```
 
 ## Usage
 
-Go to `notebooks` folder
-
-Open `logical_perceptrons.ipynb` in your `jupyter`.
+Open `perceptrons.ipynb` in your `jupyter`.
 
 Have fun!
