@@ -1,5 +1,7 @@
 # Interactive Perceptrons
 
+[![Open In Colab!](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tsavchyn/interactive-perceptrons/blob/master/perceptrons-in-colab.ipynb)
+
 The main aim of this nanoproject is to help you understand intuitively and interactively the role of Weights and Biases.
 Build logical operators by manually tweaking weights and biases values. Inspired by Lesson 2.8 "Perceptrons as Logical Operators" from Udacity course [Intro to Deep Learning with PyTorch](https://www.udacity.com/course/deep-learning-pytorch--ud188).
 
