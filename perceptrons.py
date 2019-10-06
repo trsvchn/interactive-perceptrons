@@ -1,7 +1,52 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from ipywidgets import interactive
+from ipywidgets import fixed, interactive
+from IPython.display import display
+
+##########################################
+# CONFIGS
+##########################################
+
+PARAM_RANGE = (-10.0, 10.0)  # range value for weights and biases
+RESOLUTION = 100  # number of points for surface plot (a kind of resolution)
+X1_RANGE = [-0.25, 1.25]  # axis range
+X2_RANGE = [-0.25, 1.25]  # axis range
+FIGURE_PARAMS = {'num': None,
+                 'figsize': (5, 5),
+                 'dpi': 100,
+                 'facecolor': 'w',
+                 'edgecolor': None,
+                 }
+MAIN_TITLE = {'fontsize': 'xx-large',
+              'ha': 'center',
+              }
+CORRECT_COLOR = 'g'
+WRONG_COLOR = 'r'
+ZEROS_COLOR = 'r'
+ONES_COLOR = 'b'
+LEVELS = np.linspace(0, 1, 3)  # number of colormap levels
+CMAP = cm.RdBu  # color mapp; other candidates: bwr_r seismic_r
+POINT_SIZE = 200  # size of the test points
+EDGECOLORS = 'w'  # test points edge color (white)
+TITLE = {'color': 'w',
+         'fontsize': 'large',
+         'verticalalignment': 'top',
+         }
+WRONG = 'Don\'t Give Up! You Can Do It!'  # title for wrong solution
+CORRECT = 'Nice! You Did It!'  # title for correct solution
+XTICKS = [0, 1]  # ticks for x axis
+YTICKS = [0, 1]  # ticks for y axis
+# titles, x test values and y ground truth values used for perceptrons:
+ANDCONFIG = ['ANDPerceptron', [(0, 0), (0, 1), (1, 0), (1, 1)], [0, 0, 0, 1]]
+ORCONFIG = ['ORPerceptron', [(0, 0), (0, 1), (1, 0), (1, 1)], [0, 1, 1, 1]]
+NOTCONFIG = ['NOTPerceptron', [(0, 0), (0, 1), (1, 0), (1, 1)], [1, 0, 1, 0]]
+XORCONFIG = ['XORPerceptron', [(0, 0), (0, 1), (1, 0), (1, 1)], [0, 1, 1, 0]]
+XOR2CONFIG = ['XOR2LayerPerceptron', XORCONFIG[1], XORCONFIG[2]]
+
+##########################################
+# All the functional stuff starts here
+##########################################
 
 
 def heaviside(z):
@@ -10,182 +55,187 @@ def heaviside(z):
     return a
 
 
-class Perceptron:
-    """Perceptron superclass.
+def neuron(x, w, b, activation=heaviside):
+    """Simple forward propagation: linear + heaviside (by default).
+    Inputs:
+    x: input;
+    w: weights;
+    b: bias;
+    activation: activation function (default: heaviside).
     """
-    def __init__(self):
-        self.param_range = (-10.0, 10.0)
-        self.params = {'weight1': self.param_range,
-                       'weight2': self.param_range,
-                       'bias': self.param_range,
-                       }
-        self.main_title = {'t': f'Interactive {str(self)}',
-                           'fontsize': 'xx-large',
-                           'ha': 'center',
-                           }
-        self.figure_params = {'num': None,
-                              'figsize': (5, 5),
-                              'dpi': 100,
-                              'facecolor': 'w',
-                              'edgecolor': None,
-                              }
-        self.title = {'color': 'w',
-                      'fontsize': 'large',
-                      'verticalalignment': 'top',
-                      }
-        self.WRONG = 'Don\'t Give Up! You Can Do It!'
-        self.CORRECT = 'Nice! You Did It!'
-        self.RESOLUTION = 200
-        self.X1_RANGE = [-0.05, 1.2]
-        self.X2_RANGE = [-0.05, 1.2]
-        self.XTICKS = [0, 1]
-        self.YTICKS = [0, 1]
-        self.LEVELS = np.linspace(0, 1, 3)  # number of colormap levels
-        self.CMAP = cm.RdBu  # color map
-
-        # Test points:
-        self.x_test = NotImplementedError  # expected to be [(x1, x2), ... ]
-        self.y_test = NotImplementedError  # expected to be [y, ...]
-
-    def forward(self, x):
-        """Forward propagation."""
-        z = x @ self.W.T + self.b
-        y_hat = heaviside(z)
-        return y_hat
-
-    def __call__(self, print_help=False):
-        self.interactive_plot = interactive(self.plot, **self.params)
-        self.output = self.interactive_plot.children[-1]
-        self.output.layout.height = '500px'
-        if print_help:
-            print(self.__doc__)
-        return self.interactive_plot
-
-    def plot(self, **kwargs):
-        self.W = np.array([kwargs['weight1'], kwargs['weight2']])
-        self.b = kwargs['bias']
-        self.plot_surface()
-        self.plot_test_points()
-        self.adjust_plots()
-
-    def plot_surface(self):
-        X1 = np.linspace(self.X1_RANGE[0], self.X1_RANGE[1], self.RESOLUTION)
-        X2 = np.linspace(self.X2_RANGE[0], self.X2_RANGE[1], self.RESOLUTION)
-        XX1, XX2 = np.meshgrid(X1, X2)
-        X = np.dstack([XX1, XX2])
-        Y = self.forward(X)
-
-        plt.figure(**self.figure_params)
-        plt.suptitle(**self.main_title)
-
-        ax = plt.contourf(XX1, XX2, Y, cmap=self.CMAP, levels=self.LEVELS)
-        # plt.colorbar(ax, orientation='vertical')  # add colorbar
-
-    def plot_test_points(self):
-        y_hat = []
-
-        for i, j in zip(self.x_test, self.y_test):
-            y_hat_i = int(self.forward(i))
-            y_hat.append(y_hat_i)
-            c = 'b' if j else 'r'
-            plot = plt.plot([i[0]], [i[1]], marker='o', markersize=10, color=c)
-
-        result, c = (self.CORRECT, 'g') if (y_hat == self.y_test) else (self.WRONG, 'r')
-
-        plt.title(f'{result}', backgroundcolor=c, **self.title)
-
-    def adjust_plots(self):
-        plt.xticks(self.XTICKS)
-        plt.yticks(self.YTICKS)
-        plt.xlim(self.X1_RANGE)
-        plt.ylim(self.X2_RANGE)
-
-    def __str__(self):
-        return ' P'.join(self.__class__.__name__.split('P'))
+    return activation(x @ w.T + b)
 
 
-class ANDPerceptron(Perceptron):
+def transform():
+    """Prepares input data for neuron."""
+    X1 = np.linspace(X1_RANGE[0], X1_RANGE[1], RESOLUTION)
+    X2 = np.linspace(X2_RANGE[0], X2_RANGE[1], RESOLUTION)
+    XX1, XX2 = np.meshgrid(X1, X2)
+    X = np.dstack([XX1, XX2])
+    return X
+
+
+def plot_results(x, yhat):
+    """Simply plots the results.
+    Inputs:
+    x: input;
+    yhat: predicted values of y"""
+    plt.contourf(x[:, :, 0], x[:, :, 1], yhat, cmap=CMAP, levels=LEVELS)
+
+
+def plot_test_points(x, y, wb, mlp=False) -> None:
+    """Plots test points, showing the required solution (result).
+    Inputs:
+    x: input;
+    y: ground truth values;
+    wb: list of weights and bias(es);
+    mlp: type of propagation (default: single neuron).
+    """
+    gt = list()
+    for i, j in zip(x, y):
+        gt_i = int(neuron(i, wb[0], wb[1])) if not mlp else int(propagate_mlp(i, wb))
+        gt.append(gt_i)
+        c = ONES_COLOR if j else ZEROS_COLOR
+        plt.scatter([i[0]], [i[1]], s=POINT_SIZE, edgecolors=EDGECOLORS, c=c)
+
+    result, c = (CORRECT, CORRECT_COLOR) if (gt == y) else (WRONG, WRONG_COLOR)
+    TITLE['label'] = f'{result}'  # sets the corrct title
+    TITLE['backgroundcolor'] = c  # sets the right title color
+    plt.title(**TITLE)
+
+
+def prepare_plot(t: str) -> None:
+    """Sets title, init fig, sets ticks and axis limits.
+    Inputs:
+    t: plot title.
+    """
+    # set the plot title
+    MAIN_TITLE['t'] = f'  {t}'
+    # prepare figure
+    plt.figure(**FIGURE_PARAMS)
+    plt.suptitle(**MAIN_TITLE)
+    # add ticks
+    plt.xticks(XTICKS)
+    plt.yticks(YTICKS)
+    # set the axis limits
+    plt.xlim(X1_RANGE)
+    plt.ylim(X2_RANGE)
+
+
+def plot(x, y, weight1, weight2, bias):
+    """Propagates and plots the results for the simple neuron.
+    Inputs:
+    x: input;
+    y: ground truth values;
+    weight[], bias: weights and bias of the neuron.
+    """
+    w = np.array([weight1, weight2])
+    X = transform()
+    yhat = neuron(X, w, bias)
+
+    plot_results(X, yhat)
+    plot_test_points(x, y, [w, bias])
+
+
+def run(t, x, y, weight1=PARAM_RANGE, weight2=PARAM_RANGE, bias=PARAM_RANGE):
+    """This function will be interactive.
+    Inputs:
+    t: main title;
+    x: input;
+    y: ground truth values;
+    weight[], bias: weights and bias of the neuron.
+    """
+    prepare_plot(t)
+    plot(x, y, weight1, weight2, bias)
+
+
+def perceptron(t: str, x, y, **kwargs):
+    """Base function for single neuron perceptrons. Returns ipython widget.
+    Inputs:
+    t: main title;
+    x: input;
+    y: ground truth values.
+    """
+    return interactive(run, t=fixed(t), x=fixed(x), y=fixed(y), **kwargs)
+
+
+def propagate_mlp(x, wb: list):
+    """Forward propagation for 2LayerPerceptron.
+    Inputs:
+    x: input;
+    wb: weights and biases values.
+    """
+    l1n1 = neuron(x, wb[0], wb[1])  # Layer 1 Neuron 1
+    l1n2 = neuron(x, wb[2], wb[3])  # Layer 1 Neuron 2
+    l1 = np.dstack([l1n1, l1n2])  # Layer 1 output
+    l2 = neuron(l1, wb[4], wb[5])  # Layer 2 output
+    return l2
+
+
+def plot_mlp(x, y, wb: list):
+    """Propagates and plot the mlp results.
+    Inputs:
+    x: input;
+    y: ground truth values;
+    wb: weights and biases values.
+    """
+    X = transform()
+    yhat = propagate_mlp(X, wb)
+    plot_results(X, yhat)
+    plot_test_points(x, y, wb, mlp=True)
+
+
+def run_mlp(t,
+            x,
+            y,
+            l1n1_w1=PARAM_RANGE,
+            l1n1_w2=PARAM_RANGE,
+            l1n1_b=PARAM_RANGE,
+            l1n2_w1=PARAM_RANGE,
+            l1n2_w2=PARAM_RANGE,
+            l1n2_b=PARAM_RANGE,
+            l2_w1=PARAM_RANGE,
+            l2_w2=PARAM_RANGE,
+            l2_b=PARAM_RANGE):
+    """This function will be interactive."""
+    l1n1_W, l1n2_W = np.array([l1n1_w1, l1n1_w2]), np.array([l1n2_w1, l1n2_w2])
+    l2_W = np.array([l2_w1, l2_w2])
+    wb = [l1n1_W, l1n1_b, l1n2_W, l1n2_b, l2_W, l2_b]
+
+    prepare_plot(t)
+    plot_mlp(x, y, wb)
+
+
+def mlp(t, x, y, **kwargs):
+    """Base function for interactive MLPs."""
+    return interactive(run_mlp, t=fixed(t), x=fixed(x), y=fixed(y), **kwargs)
+
+
+##########################################
+# Here's final functions for export :)
+##########################################
+
+
+def and_perceptron():
     """Interactive AND Perceptron."""
-    def __init__(self):
-        super().__init__()
-        self.x_test = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        self.y_test = [0, 0, 0, 1]
+    display(perceptron(*ANDCONFIG))
 
 
-class ORPerceptron(Perceptron):
+def or_perceptron():
     """Interactive OR Perceptron."""
-    def __init__(self):
-        super().__init__()
-        self.x_test = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        self.y_test = [0, 1, 1, 1]
+    display(perceptron(*ORCONFIG))
 
 
-class NOTPerceptron(Perceptron):
-    """Interactive NOT Perceptron. Ignores The First Input."""
-    def __init__(self):
-        super().__init__()
-        self.params['weight1'] = (0, 0)
-        self.x_test = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        self.y_test = [1, 0, 1, 0]
+def not_perceptron():
+    """Interactive NOT Perceptron."""
+    display(perceptron(*NOTCONFIG, weight1=(0, 0)))
 
 
-class XORPerceptron(Perceptron):
-    """Interactive XOR Perceptron."""
-    def __init__(self):
-        super().__init__()
-        self.WRONG_TITLE = 'Spoiler! You Will Never Solve It!'
-        self.x_test = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        self.y_test = [0, 1, 1, 0]
+def xor_perceptron():
+    """Unsolvable Interactive XOR Perceptron."""
+    display(perceptron(*XORCONFIG))
 
 
-class XOR2LayerPerceptron(Perceptron):
-    """XOR Multi-Layer Perceptron.
-    l1n1_w1: Layer1 Node1 Weight1
-    l1n1_w2: Layer1 Node1 Weight2
-    l1n1_b: Layer1 Node1 Bias
-    l1n2_w1: Layer1 Node2 Weight1
-    l1n2_w2: Layer1 Node2 Weight2
-    l1n2_b: Layer1 Node2 Bias
-    l2_w1: Layer2 Weight1
-    l2_w2: Layer2 Weight2
-    l2_b: Layer2 Bias
-    """
-    def __init__(self):
-        super().__init__()
-        self.params = {'l1n1_w1': self.param_range,
-                       'l1n1_w2': self.param_range,
-                       'l1n1_b': self.param_range,
-                       'l1n2_w1': self.param_range,
-                       'l1n2_w2': self.param_range,
-                       'l1n2_b': self.param_range,
-                       'l2_w1': self.param_range,
-                       'l2_w2': self.param_range,
-                       'l2_b': self.param_range,
-                       }
-        self.x_test = [(0, 0), (0, 1), (1, 0), (1, 1)]
-        self.y_test = [0, 1, 1, 0]
-
-    def forward(self, X):
-        """XOR Multi-Layer Perceptron forward."""
-        l1n1 = X @ self.l1n1_W + self.l1n1_b  # Layer1 Node1
-        l1n2 = X @ self.l1n2_W + self.l1n2_b  # Layer1 Node2
-        l1n1 = heaviside(l1n1)  # Layer1 Node1
-        l1n2 = heaviside(l1n2)  # Layer1 Node2
-        l1 = np.dstack([l1n1, l1n2])  # Layer1 output
-        l2 = l1 @ self.l2_W + self.l2_b  # Layer2
-        l2 = heaviside(l2)  # Layer2 (Output) Single Node
-        return l2
-
-    def plot(self, **kwargs):
-        self.l1n1_W = np.array([kwargs['l1n1_w1'], kwargs['l1n1_w2']])
-        self.l1n1_b = kwargs['l1n1_b']
-        self.l1n2_W = np.array([kwargs['l1n2_w1'], kwargs['l1n2_w2']])
-        self.l1n2_b = kwargs['l1n2_b']
-        self.l2_W = np.array([kwargs['l2_w1'], kwargs['l2_w2']])
-        self.l2_b = kwargs['l2_b']
-        self.plot_surface()
-        self.plot_test_points()
-        self.adjust_plots()
-
-    def __str__(self):
-        return ' 2'.join(self.__class__.__name__.split('2'))
+def xor_mlp():
+    """Interactive XOR 2-Layer Perceptron."""
+    display(mlp(*XOR2CONFIG))
